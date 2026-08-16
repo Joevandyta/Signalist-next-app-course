@@ -25,7 +25,7 @@ const InputField = ({
         placeholder={placeholder}
         disabled={disabled}
         value={value}
-        className={cn("form-input", className, {
+        className={cn("form-input w-full", className, {
           "opacity-50 cursor-not-allowed": disabled,
         })}
         {...register(name, validation)}
