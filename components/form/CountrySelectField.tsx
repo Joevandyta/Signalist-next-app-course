@@ -73,6 +73,7 @@ const CountrySelect = ({
           <CommandInput
             placeholder="Search countries..."
             className="country-select-input"
+            
           />
           <CommandEmpty className="country-select-empty">
             No country found.
