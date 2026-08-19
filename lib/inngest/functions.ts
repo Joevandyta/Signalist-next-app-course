@@ -7,7 +7,7 @@ import {
 } from "./prompts";
 import { getWatchlistSymbolsByEmail } from "../actions/watchlist.actions";
 import { getNews } from "../actions/finnhub.actions";
-import { formatDateToday } from "../utils";
+import { formatDateToday, getFormattedTodayDate } from "../utils";
 
 export const sendSignUpEmail = inngest.createFunction(
   { id: "sign-up-email", triggers: { event: "app/user.created" } },
@@ -128,7 +128,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
           if (!newsContent) return false;
           return await sendNewsSummaryEmail({
             email: user.email,
-            date: formatDateToday,
+            date: getFormattedTodayDate(),
             newsContent: newsContent ?? "No market News",
           });
         }),
