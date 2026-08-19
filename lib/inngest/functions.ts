@@ -112,7 +112,7 @@ export const sendDailyNewsSummary = inngest.createFunction(
 
         const part = res?.candidates?.[0]?.content?.parts?.[0];
         const newsContent =
-          part && "text" in part ? part.text : null || "No market News";
+          (part && "text" in part ? part.text : null) || "No market News";
 
         userNewsSummaries.push({ user, newsContent });
       } catch (error) {
