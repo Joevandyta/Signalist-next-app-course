@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/better-auth/auth";
 import { getSessionCookie } from "better-auth/cookies";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
 
   if (!sessionCookie) {
