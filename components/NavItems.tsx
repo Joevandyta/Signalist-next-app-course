@@ -4,7 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SearchCommand from "./components/SearchCommand";
 
-const NavItems = ({initialStocks}: {initialStocks: StockWithWatchlistStatus[]  }) => {
+const NavItems = ({
+  initialStocks,
+}: {
+  initialStocks: StockWithWatchlistStatus[];
+}) => {
   const pathName: string = usePathname();
   const isActive = (path: string) => {
     if (path == "/") return pathName == "/";
@@ -15,7 +19,7 @@ const NavItems = ({initialStocks}: {initialStocks: StockWithWatchlistStatus[]  }
     <ul className="flex flex-col sm:flex-row p-2 gap-3 sm:gap-10 font-medium">
       {[
         NAV_ITEMS.map(({ href, label }) => {
-          if (label === "Search")
+          if (label === 'Search')
             return (
               <SearchCommand
                 key={href}
@@ -24,6 +28,7 @@ const NavItems = ({initialStocks}: {initialStocks: StockWithWatchlistStatus[]  }
                 initialStocks={initialStocks}
               />
             );
+
           return (
             <li key={href}>
               <Link
