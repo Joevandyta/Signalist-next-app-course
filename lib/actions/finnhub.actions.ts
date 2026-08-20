@@ -158,7 +158,10 @@ export const searchStocks = cache(
         const data = await fetchJSON<FinnhubSearchResponse>(url, 1800);
         results = Array.isArray(data?.result) ? data.result : [];
       }
-      const watchlist = await getWatchlistSymbolsByEmail(email);
+      let watchlist: string[] = [];
+      if (email) {
+        watchlist = await getWatchlistSymbolsByEmail(email);
+      }
       const mapped: StockWithWatchlistStatus[] = results
         .map((r) => {
           const upper = (r.symbol || "").toUpperCase();
