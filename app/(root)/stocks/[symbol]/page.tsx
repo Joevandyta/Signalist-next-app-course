@@ -8,10 +8,24 @@ import {
   COMPANY_FINANCIALS_WIDGET_CONFIG,
 } from "@/lib/constants";
 import WatchlistButton from "@/components/WatchlistButton";
+import {
+  getStocksDetails,
+  getUserWatchlist,
+} from "@/lib/actions/watchlist.actions";
+import { WatchlistItem } from "@/database/models/watchlist.model";
+import { notFound } from "next/navigation";
 
 export default async function StockDetails({ params }: StockDetailsPageProps) {
   const { symbol } = await params;
   const scriptUrl = `https://s3.tradingview.com/external-embedding/embed-widget-`;
+  const stockData = await getStocksDetails(symbol.toUpperCase());
+
+  const userWatchlist = await getUserWatchlist();
+
+  const isInWatchlist = userWatchlist.some(
+    (item: WatchlistItem) => item.symbol === symbol.toUpperCase(),
+  );
+  if (!stockData) notFound();
 
   return (
     <div className="w-full min-h-screen py-8">
@@ -37,11 +51,13 @@ export default async function StockDetails({ params }: StockDetailsPageProps) {
 
         {/* Right Column */}
         <div className="lg:col-span-1 flex flex-col gap-8">
-          <WatchlistButton 
-              symbol={symbol} 
-              company={symbol} 
-              isInWatchlist={false} 
-            />
+          <WatchlistButton
+            symbol={symbol}
+            company={stockData.company}
+            isInWatchlist={isInWatchlist}
+            showTrashIcon={false}
+            type="button"
+          />
           <TradingViewWidget
             scriptUrl={`${scriptUrl}technical-analysis.js`}
             config={TECHNICAL_ANALYSIS_WIDGET_CONFIG(symbol)}

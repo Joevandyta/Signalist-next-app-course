@@ -3,6 +3,9 @@
 import { getDateRange, validateArticle, formatArticle } from "@/lib/utils";
 import { POPULAR_STOCK_SYMBOLS } from "../constants";
 import { cache } from "react";
+import { auth } from "../better-auth/auth";
+import { headers } from "next/headers";
+import { getWatchlistSymbolsByEmail } from "./watchlist.actions";
 
 const FINNHUB_BASE_URL = "https://finnhub.io/api/v1";
 const NEXT_PUBLIC_FINNHUB_API_KEY =
@@ -94,7 +97,10 @@ export async function getNews(
 }
 
 export const searchStocks = cache(
-  async (query?: string): Promise<StockWithWatchlistStatus[]> => {
+  async (
+    query?: string,
+    email?: string,
+  ): Promise<StockWithWatchlistStatus[]> => {
     try {
       const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
       if (!token) {
@@ -152,7 +158,7 @@ export const searchStocks = cache(
         const data = await fetchJSON<FinnhubSearchResponse>(url, 1800);
         results = Array.isArray(data?.result) ? data.result : [];
       }
-
+      const watchlist = await getWatchlistSymbolsByEmail(email);
       const mapped: StockWithWatchlistStatus[] = results
         .map((r) => {
           const upper = (r.symbol || "").toUpperCase();
@@ -169,7 +175,7 @@ export const searchStocks = cache(
             name,
             exchange,
             type,
-            isInWatchlist: false,
+            isInWatchlist: watchlist.includes(upper),
           };
           return item;
         })

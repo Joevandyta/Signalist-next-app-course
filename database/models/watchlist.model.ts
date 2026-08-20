@@ -5,7 +5,7 @@ export interface WatchlistItem extends Document {
   symbol: string;
   company: string;
   addedAt: Date;
-}
+} 
 
 const WatchlistSchema = new Schema<WatchlistItem>(
   {

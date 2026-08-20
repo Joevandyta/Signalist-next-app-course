@@ -45,6 +45,7 @@ export const signUpWithEmail = async ({
 
 export const signInUsingEmail = async ({ email, password }: SignInFormData) => {
   try {
+
     const res = await auth.api.signInEmail({
       body: {
         email,

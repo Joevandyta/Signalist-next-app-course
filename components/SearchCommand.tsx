@@ -2,24 +2,24 @@
 
 import { useEffect, useState } from "react";
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
-  CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Loader2, Star, TrendingUp } from "lucide-react";
+import { Loader2, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
-import { set } from "mongoose";
 import { useDebounce } from "@/hooks/useDebounce";
+import WatchlistButton from "./WatchlistButton";
+import { email } from "better-auth";
+
 export default function SearchCommand({
   renderAs = "button",
   label = "Add stock",
   initialStocks,
+  user,
 }: SearchCommandProps) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +29,7 @@ export default function SearchCommand({
 
   const isSearchMode = !!searchTerm.trim();
   const displayStocks = isSearchMode ? stocks : stocks?.slice(0, 10);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -45,23 +46,35 @@ export default function SearchCommand({
 
     setLoading(true);
     try {
-      const result = await searchStocks(searchTerm.trim());
-      setStocks(result);
-    } catch (error) {
+      const results = await searchStocks(searchTerm.trim(), user?.email || "");
+      setStocks(results);
+    } catch {
       setStocks([]);
     } finally {
       setLoading(false);
     }
   };
-  const debouncedSearch = useDebounce(handleSearch, 500);
+
+  const debouncedSearch = useDebounce(handleSearch, 300);
 
   useEffect(() => {
     debouncedSearch();
   }, [searchTerm]);
+
   const handleSelectStock = () => {
     setOpen(false);
     setSearchTerm("");
     setStocks(initialStocks);
+  };
+
+  // Handle watchlist changes status change
+  const handleWatchlistChange = async (symbol: string, isAdded: boolean) => {
+    // Update current stocks
+    setStocks(
+      initialStocks?.map((stock) =>
+        stock.symbol === symbol ? { ...stock, isInWatchlist: isAdded } : stock,
+      ) || [],
+    );
   };
 
   return (
@@ -78,32 +91,31 @@ export default function SearchCommand({
       <CommandDialog
         open={open}
         onOpenChange={setOpen}
-        className="search-dialog "
-        showCloseButton={true}
+        className="search-dialog"
       >
-        <div className="search-field p-0">
+        <div className="search-field">
           <CommandInput
             value={searchTerm}
             onValueChange={setSearchTerm}
             placeholder="Search stocks..."
-            className="search-input "
+            className="search-input"
           />
           {loading && <Loader2 className="search-loader" />}
         </div>
         <CommandList className="search-list">
           {loading ? (
             <CommandEmpty className="search-list-empty">
-              Loading stocks ...
+              Loading stocks...
             </CommandEmpty>
           ) : displayStocks?.length === 0 ? (
             <div className="search-list-indicator">
-              {isSearchMode ? "No result Found" : "No Stocks Available"}
+              {isSearchMode ? "No results found" : "No stocks available"}
             </div>
           ) : (
             <ul>
               <div className="search-count">
-                {isSearchMode ? "Search Result" : "Popular Stocks"}(
-                {displayStocks?.length || 0})
+                {isSearchMode ? "Search results" : "Popular stocks"}
+                {` `}({displayStocks?.length || 0})
               </div>
               {displayStocks?.map((stock, i) => (
                 <li key={stock.symbol} className="search-item">
@@ -119,9 +131,12 @@ export default function SearchCommand({
                         {stock.symbol} | {stock.exchange} | {stock.type}
                       </div>
                     </div>
-                    {/* @ts-ignore */}
-                    <Star
-                      fill={stock.isInWatchlist ? "gold" : "transparent"}
+                    <WatchlistButton
+                      symbol={stock.symbol}
+                      company={stock.name}
+                      isInWatchlist={stock.isInWatchlist}
+                      onWatchlistChange={handleWatchlistChange}
+                      type="icon"
                     />
                   </Link>
                 </li>
